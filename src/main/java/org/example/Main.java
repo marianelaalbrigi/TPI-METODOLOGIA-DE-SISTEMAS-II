@@ -92,7 +92,7 @@ public class Main {
                                 inscripciones(n,ap);
                                 break;
                             case 2:
-                                listarAsigaturasEstudiante(n,ap);
+                                listarAsignaturasEstudiante(n,ap);
                                 break;
                             case 3:
                                 verNotas(n,ap);
@@ -328,7 +328,7 @@ public class Main {
     }
 
     // Lista las asignaturas en las que se encuentra inscripto el estudiante.
-    public static void listarAsigaturasEstudiante(String n, String ap){
+    public static void listarAsignaturasEstudiante(String n, String ap){
 
         String estudiante = n + " " + ap;
         boolean existeEstudiantes = false;
