@@ -1,24 +1,32 @@
 package org.example;
 
-import java.util.ArrayList;
+import org.example.entities.Asignatura;
+import org.example.entities.Nota;
+import org.example.entities.Rol;
+import org.example.entities.Usuario;
+import org.example.service.AsignaturaService;
+import org.example.service.InscripcionService;
+import org.example.service.NotaService;
+
+
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    static Scanner sc = new Scanner(System.in);
+    private final Scanner sc = new Scanner(System.in);
+    private final AsignaturaService asignaturaService = new AsignaturaService();
+    private final InscripcionService inscripcionService = new InscripcionService();
+    private final NotaService notaService = new NotaService(inscripcionService);
 
-    // Simulación de persistencia en memoria mediante ArrayList.
-
-    // Asignatura: [0] profesor, [1] nombre de asignaturas, [2] turno.
-    static ArrayList<String[]> bdAsignaturasDisponibles = new ArrayList<String[]>();
-
-    // Inscripción: [0] estudiante, [1] nombre de asignatura.
-    static ArrayList<String[]> bdInscripciones = new ArrayList<String[]>();
-
-    // Nota: [0] asignatura, [1] estudiante, [2] nota.
-    static ArrayList<String[]> notas = new ArrayList<String[]>();
 
     public static void main(String[] args) {
 
+        Main app = new Main();
+        app.mostrarMenuPrincipal();
+
+    }
+
+    private void mostrarMenuPrincipal() {
 
         int opcionMenuPrincipal = -1;
 
@@ -26,322 +34,306 @@ public class Main {
 
             System.out.println("--- SISTEMA ACADEMICO ---");
             System.out.println("1 - Iniciar Sesión");
-            System.out.println("0 - Salir del Sistema completamente");
+            System.out.println("0 - Salir del sistema");
             System.out.print("Seleccione una opción: ");
+
             opcionMenuPrincipal = sc.nextInt();
             sc.nextLine();
 
-            if (opcionMenuPrincipal == 1) {
+            switch (opcionMenuPrincipal) {
 
-                System.out.println("Ingrese su nombre: ");
-                String n = sc.nextLine();
-
-                System.out.println("Ingrese su apellido: ");
-                String ap = sc.nextLine();
-
-                // Manejo de Rol mediante String en esta version inicial
-                System.out.println("Ingrese su Rol (profesor/estudiante): ");
-                String r = sc.nextLine();
-
-                if (r.equals("profesor") || r.equals("Profesor")) {
-                    int opcion;
-                    do {
-                        System.out.println("--- Menu (Profesor) ---");
-                        System.out.println("1-Cargar Asignaturas");
-                        System.out.println("2-Listar Asignaturas a cargo");
-                        System.out.println("3-Cambiar turno de asignaturas");
-                        System.out.println("4-Publicar Notas");
-                        System.out.println("0-Cerrar Sesión");
-                        opcion = sc.nextInt();
-                        sc.nextLine();
-                        switch (opcion) {
-                            case 1:
-                                cargarAsignaturas( n, ap);
-                                break;
-                            case 2:
-                                listarAsignaturasACargo(n, ap);
-                                break;
-                            case 3:
-                                cambiarTurno(n, ap);
-                                break;
-                            case 4:
-                                publicarNotas(n, ap);
-                                break;
-                            case 0:
-                                break;
-                            default:
-                                System.out.println("Opcion no valida.");
-                                break;
-                        }
-                    } while (opcion != 0);
-
-                } else if (r.equals("estudiante") || r.equals("Estudiante")) {
-
-                    int opcion1;
-
-                    do {
-                        System.out.println("--- Menu (Estudiante) ---");
-                        System.out.println("1-Inscripción a asignatura.");
-                        System.out.println("2-Listar mis Asignaturas.");
-                        System.out.println("3-Ver Notas.");
-                        System.out.println("0-Cerrar Sesión.");
-                        opcion1 = sc.nextInt();
-                        sc.nextLine();
-                        switch (opcion1) {
-                            case 1:
-                                inscripciones(n,ap);
-                                break;
-                            case 2:
-                                listarAsignaturasEstudiante(n,ap);
-                                break;
-                            case 3:
-                                verNotas(n,ap);
-                                break;
-                            case 0:
-                                break;
-                            default:
-                                System.out.println("Opcion no valida.");
-                                break;
-                        }
-                    } while (opcion1 != 0);
-                } else {
-                    System.out.println("Rol no reconocido, debe ingresar 'profesor' o 'estudiante'");
-                }
-            } else if (opcionMenuPrincipal == 0) {
-                System.out.println("Saliendo del sistema.");
-            } else {
-                System.out.println("Opcion incorrecta.");
+                case 1:
+                    iniciarSesion();
+                    break;
+                case 0:
+                    System.out.println("Saliendo del sistema.");
+                    break;
+                default:
+                    System.out.println("Opción incorrecta.");
+                    break;
             }
-
         }
-
-
     }
 
+    private void iniciarSesion() {
 
-    public static void inscripciones (String n, String ap) {
+        System.out.println("Ingrese su nombre: ");
+        String nombre = sc.nextLine();
 
-        String alumno = n + " " + ap;
-        boolean disponible = false;
+        System.out.println("Ingrese su apellido: ");
+        String apellido = sc.nextLine();
 
-        System.out.println("\n --- AIGNATURAS DISPONIBLES ---");
+        System.out.println("Ingrese su Rol (profesor/estudiante): ");
+        String rolIngresado = sc.nextLine();
 
-        for (String[] asignaturas : bdAsignaturasDisponibles) {
-            System.out.println("Asignatura: " + asignaturas[1] + " | Profesor: "+ asignaturas[0]);
-        }
+        if (rolIngresado.equalsIgnoreCase("profesor")) {
 
-        System.out.println("Introducir la asignatura: ");
-        String as = sc.nextLine();
+            Usuario profesor = new Usuario(nombre, apellido, Rol.PROFESOR);
+            mostrarMenuProfesor(profesor);
+        } else if (rolIngresado.equalsIgnoreCase("estudiante")) {
 
-        for (String[] asignaturas : bdAsignaturasDisponibles) {
-            if  (asignaturas[1].equals(as)) {
-                disponible = true;
-            }
-        }
-        if  (disponible) {
-            String[] a = new String[2];
-            a[0] = alumno;
-            a[1] = as;
-
-            bdInscripciones.add(a);
-            System.out.println("Inscripcion registrada correctamente.");
+            Usuario estudiante = new Usuario(nombre, apellido, Rol.ESTUDIANTE);
+            mostrarMenuEstudiante(estudiante);
         } else {
-            System.out.println("Asignatura no disponible.");
-        }
 
+            System.out.println("Rol incorrecto, debe ingresar 'profesor' o 'estudiante'");
+        };
     }
 
+    private void mostrarMenuProfesor(Usuario profesor) {
 
+        int opcion;
 
-    public static void cambiarTurno(String n, String ap) {
+        do {
+            System.out.println("--- Menu (Profesor) ---");
+            System.out.println("1-Cargar asignaturas");
+            System.out.println("2-Listar asignaturas a cargo");
+            System.out.println("3-Cambiar turno de asignaturas");
+            System.out.println("4-Publicar notas");
+            System.out.println("0-Cerrar Sesión");
 
-        String profe = n + " " + ap;
-        boolean encontrado = false;
+            opcion = sc.nextInt();
+            sc.nextLine();
 
-        System.out.println("Introducir la asignatura: ");
-        String as = sc.nextLine();
-        System.out.println("Introducir nuevo turno: ");
-        String t = sc.nextLine();
-
-        for (String[] a : bdAsignaturasDisponibles) {
-            if (a[0].equals(profe) && a[1].equals(as)){
-                a[2] = t;
-                encontrado = true;
+            switch (opcion) {
+                case 1:
+                    cargarAsignatura(profesor);
+                    break;
+                case 2:
+                    listarAsignaturasProfesor(profesor);
+                    break;
+                case 3:
+                    cambiarTurno(profesor);
+                    break;
+                case 4:
+                    publicarNota(profesor);
+                    break;
+                case 0:
+                    System.out.println("Cerrando sesión.");
+                    break;
+                default:
+                    System.out.println("Opción incorrecta.");
+                    break;
             }
-        }
-        if (encontrado) {
-            System.out.println("Asignatura Cambiada.");
-        } else {
-            System.out.println("Asignatura no encontrada.");
-        }
-
+        } while (opcion != 0);
     }
 
+    private void mostrarMenuEstudiante(Usuario estudiante) {
 
-    public static void cargarAsignaturas(String n, String ap){
+        int opcion;
 
+        do {
+            System.out.println("--- Menu (Estudiante) ---");
+            System.out.println("1-Inscripción a asignaturas");
+            System.out.println("2-Listar mis asignaturas");
+            System.out.println("3-Ver mis notas");
+            System.out.println("0-Cerrar Sesión");
 
-        String prof = n + " " + ap;
+            opcion = sc.nextInt();
+            sc.nextLine();
 
-        System.out.println("\n --- ALTA DE ASIGNATURA ---");
+            switch (opcion) {
+                case 1:
+                    inscribirEstudiante(estudiante);
+                    break;
+                case 2:
+                    listarAsignaturasEstudiante(estudiante);
+                    break;
+                case 3:
+                    verNotas(estudiante);
+                    break;
+                case 0:
+                    System.out.println("Cerrando sesión.");
+                    break;
+                default:
+                    System.out.println("Opción incorrecta.");
+                    break;
+            }
+        } while (opcion != 0);
+    }
 
-        System.out.println("Introducir el nombre de la asignatura: ");
-        String as = sc.nextLine();
+    // METODOS DEL PROFESOR
+
+    private void cargarAsignatura(Usuario profesor) {
+        System.out.println("\n--- ALTA DE ASIGNATURA ---");
+
+        System.out.println("introducir el nombre de la asignatura: ");
+        String nombreAsignatura = sc.nextLine();
 
         System.out.println("Introducir el turno (Mañana/Tarde): ");
-        String t = sc.nextLine();
+        String turno = sc.nextLine();
 
-        String[] a = new String[3];
-        a[0] = prof;
-        a[1] = as;
-        a[2] = t;
+        asignaturaService.cargarAsignatura(profesor, nombreAsignatura, turno);
 
-        bdAsignaturasDisponibles.add(a);
-        System.out.println("Asignatura " + as + " dada de alta correctamente por el profesor " + prof + ".");
+        System.out.println("Asignatura " + nombreAsignatura + " dada de alta correctamente por el profesor " + profesor.getNombreCompleto());
     }
 
-    // Filtra las asignaturas pertencientes al profesor que inicio sesión.
-    public static ArrayList<String[]> obtenerAsignaturasACargo(String n, String ap){
-        String prof = n + " " + ap;
-        ArrayList<String[]> asignaturasACargo = new ArrayList<>();
-        for (String[] asignaturas : bdAsignaturasDisponibles) {
-            if (asignaturas[0].equals(prof)) {
-                asignaturasACargo.add(asignaturas);
-            }
-        }
-        return asignaturasACargo;
-    }
+    private void listarAsignaturasProfesor(Usuario profesor) {
+        List<Asignatura> asignaturas = asignaturaService.obtenerAsignaturasProfesor(profesor);
 
-
-    public static void listarAsignaturasACargo(String n, String ap){
-
-        String prof =  n + " " + ap;
-
-        ArrayList<String[]> asignaturas = obtenerAsignaturasACargo(n, ap);
-        System.out.println("\n --- ASIGNATURAS A CARGO ("+ prof +") ---");
+        System.out.println("\n--- ASIGNATURAS A CARGO (" + profesor.getNombreCompleto() + ") ---");
 
         if (asignaturas.isEmpty()) {
             System.out.println("No hay asignaturas disponibles.");
-        } else {
-            for (String[] a: asignaturas) {
-                System.out.println("Materia: " + a[1] + " | Turno: " + a[2]);
-            }
+            return;
         }
 
+        for (Asignatura asignatura : asignaturas) {
+            System.out.println("Materia: " + asignatura.getNombre() + " | Turno: " + asignatura.getTurno());
+        };
     }
 
-    // El profesor solo puede publicar notas en asignaturas que tiene a cargo.
-    public static void publicarNotas(String n, String ap){
+    private void cambiarTurno(Usuario profesor) {
+        System.out.println("Introducir la asignatura: ");
+        String nombreAsignatura = sc.nextLine();
 
-        ArrayList<String[]> asignaturas = obtenerAsignaturasACargo(n, ap);
+        System.out.println("Introducir nuevo turno: ");
+        String nuevoTurno = sc.nextLine();
+
+        boolean cambiado = asignaturaService.cambiarTurno(profesor, nombreAsignatura, nuevoTurno);
+
+        if (cambiado) {
+            System.out.println("Asignatura cambiada correctamente.");
+        } else {
+            System.out.println("Asignatura no encontrada.");
+        }
+    }
+
+    private void publicarNota(Usuario profesor) {
+        List<Asignatura> asignaturas = asignaturaService.obtenerAsignaturasProfesor(profesor);
+
         if (asignaturas.isEmpty()) {
             System.out.println("No hay asignaturas a cargo.");
             return;
         }
 
-        System.out.println("--- ASIGNATURAS A CARGO ---");
+        System.out.println("\n--- ASIGNATURAS A CARGO ---");
 
-        for (String[] a: asignaturas) {
-            System.out.println("Materia: " + a[1] + " | Turno: " + a[2]);
-        }
+        for (Asignatura asignatura : asignaturas) {
+            System.out.println("Materia: " + asignatura.getNombre() + " | Turno: " + asignatura.getTurno());
+        };
 
-        System.out.println("ingrese asignatura: ");
-        String asSeleccionada = sc.nextLine();
-        boolean encontrado = false;
+        System.out.println("Ingrese asignatura: ");
+        String nombreAsignatura = sc.nextLine();
 
-        for (String[] a: asignaturas) {
-            if (a[1].equals(asSeleccionada)) {
-                encontrado = true;
+        Asignatura asignaturaSeleccionada = null;
+
+        for (Asignatura asignatura : asignaturas) {
+            if (asignatura.getNombre().equalsIgnoreCase(nombreAsignatura)) {
+                asignaturaSeleccionada = asignatura;
                 break;
             }
         }
 
-        if (!encontrado) {
-            System.out.println("La asignatura seleccionada no esta a su cargo.");
+        if (asignaturaSeleccionada == null) {
+            System.out.println("La asignatura seleccionada no está a su cargo.");
             return;
         }
 
-        System.out.println("--- ESTUDIANTES INSCRIPTOS ---");
+        List<Usuario> estudiantes = inscripcionService.obtenerEstudiantesAsignatura(asignaturaSeleccionada);
 
-
-        boolean existeEstudiantes = false;
-
-        for (String[] inscripciones: bdInscripciones) {
-            if (inscripciones[1].equals(asSeleccionada)) {
-                System.out.println("Alumno: " + inscripciones[0]);
-                existeEstudiantes = true;
-            }
-        }
-
-        if (!existeEstudiantes) {
+        if  (estudiantes.isEmpty()) {
             System.out.println("No hay estudiantes inscriptos en esta asignatura.");
             return;
         }
 
-        System.out.println("Ingrese el nombre del estudiante: ");
-        String estudiante = sc.nextLine();
-        boolean estudianteEncontrado = false;
+        System.out.println("\n--- ESTUDIANTES INSCRIPTOS ---");
 
-        for (String[] inscripciones: bdInscripciones) {
-            if (inscripciones[1].equals(asSeleccionada) && inscripciones[0].equals(estudiante)) {
-                estudianteEncontrado = true;
+        for (Usuario estudiante : estudiantes) {
+            System.out.println("Alumno: " + estudiante.getNombreCompleto());
+        }
+
+        System.out.println("Ingrese el nombre completo del estudiante: ");
+        String nombreEstudiante = sc.nextLine();
+
+        Usuario estudianteSeleccionado = null;
+
+        for (Usuario estudiante : estudiantes) {
+            if (estudiante.getNombreCompleto().equalsIgnoreCase(nombreEstudiante)) {
+                estudianteSeleccionado = estudiante;
                 break;
             }
         }
 
-        if (!estudianteEncontrado) {
-            System.out.println("El estudiante no esta inscripto en esta materia.");
+        if (estudianteSeleccionado == null) {
+            System.out.println("El estudiante no está inscripto en esta materia.");
             return;
         }
 
-        System.out.println("Ingrese nota");
-        String nota = sc.nextLine();
+        System.out.println("Ingrese nota: ");
+        double valor = Double.parseDouble(sc.nextLine());
 
-        String[] nuevaNota = new String[3];
-        nuevaNota[0] = asSeleccionada;
-        nuevaNota[1] = estudiante;
-        nuevaNota[2] = nota;
+        boolean publicada = notaService.publicarNota(estudianteSeleccionado,asignaturaSeleccionada,valor);
 
-        notas.add(nuevaNota);
-        System.out.println("Notas publicadas correctamente.");
+        if (publicada) {
+            System.out.println("Nota publicada correctamente.");
+        } else {
+            System.out.println("No se pudo publicar la nota.");
+        }
     }
 
+    // METODOS DEL ESTUDIANTE
 
-    // Muestra únicamente las notas correspondientes al estudiante que inicio sesión.
-    public static void verNotas(String n, String ap){
+    private void inscribirEstudiante(Usuario estudiante) {
+        List<Asignatura> asignaturas = asignaturaService.obtenerAsignaturas();
 
-        String estudiante = n + " " + ap;
-        boolean tieneNotas = false;
+        System.out.println("\n--- ASIGNATURAS DISPONIBLES ---");
 
-        System.out.println("--- VER NOTAS ---");
-
-        for (String[] nota: notas) {
-            if (nota[1].equals(estudiante)) {
-                System.out.println("Asignatura: " + nota[0] + " | Nota: " + nota[2]);
-                tieneNotas = true;
-            }
+        if (asignaturas.isEmpty()) {
+            System.out.println("No hay asignaturas disponibles.");
+            return;
         }
 
-        if (!tieneNotas) {
+        for (Asignatura asignatura : asignaturas) {
+            System.out.println("Asignatura: " + asignatura.getNombre() + " | Profesor: " + asignatura.getProfesor().getNombreCompleto() + " | Turno: " + asignatura.getTurno());
+        }
+
+        System.out.println("Introducir la asignatura: ");
+        String nombreAsignatura = sc.nextLine();
+
+        Asignatura asignatura = asignaturaService.buscarAsignatura(nombreAsignatura);
+
+        if (asignatura == null) {
+            System.out.println("Asignatura no disponible.");
+            return;
+        }
+
+        boolean inscripto = inscripcionService.inscribir(estudiante, asignatura);
+
+        if (inscripto) {
+            System.out.println("Inscripción registrada correctamente.");
+        } else {
+            System.out.println("Ya estás inscripto en esta asignatura.");
+        }
+    }
+
+    private void listarAsignaturasEstudiante(Usuario estudiante) {
+        List<Asignatura> asignaturas = inscripcionService.obtenerAsignaturasEstudiante(estudiante);
+
+        System.out.println("\n--- MIS ASIGNATURAS ---");
+
+        if (asignaturas.isEmpty()) {
+            System.out.println("No estás inscripto en ninguna asignatura.");
+            return;
+        }
+
+        for (Asignatura asignatura : asignaturas) {
+            System.out.println("Asignatura: " + asignatura.getNombre() + " | Turno: " + asignatura.getTurno());
+        }
+    }
+
+    private void verNotas(Usuario estudiante) {
+        List<Nota> notas = notaService.obtenerNotasEstudiante(estudiante);
+
+        System.out.println("\n--- VER NOTAS ---");
+
+        if (notas.isEmpty()) {
             System.out.println("No hay notas disponibles.");
+            return;
         }
-    }
 
-    // Lista las asignaturas en las que se encuentra inscripto el estudiante.
-    public static void listarAsignaturasEstudiante(String n, String ap){
-
-        String estudiante = n + " " + ap;
-        boolean existeEstudiantes = false;
-
-        System.out.println("--- MIS ASIGNATURAS ---");
-        for (String[] inscripciones: bdInscripciones) {
-            if (inscripciones[0].equals(estudiante)) {
-                System.out.println("Asignatura: " + inscripciones[1]);
-                existeEstudiantes = true;
-            }
-        }
-        if (!existeEstudiantes) {
-            System.out.println("No estas inscripto en ninguna asignatura.");
+        for (Nota nota :  notas) {
+            System.out.println("Asignatura: " + nota.getAsignatura().getNombre() + " | Nota: " + nota.getValor());
         }
     }
 }
