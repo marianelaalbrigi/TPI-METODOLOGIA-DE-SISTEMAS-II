@@ -6,23 +6,46 @@ import org.example.entities.Usuario;
 import java.util.ArrayList;
 import java.util.List;
 
+// Gestiona las asignaturas del sistema y centra la lógica.
 public class AsignaturaService {
 
     private final List<Asignatura> asignaturas = new ArrayList<>();
 
+    // Crea una nueva asignatura asociada al profesor recibido.
     public void cargarAsignatura(Usuario profesor, String nombre, String turno) {
-
+        Asignatura asignatura = new Asignatura(nombre, turno, profesor);
+        asignaturas.add(asignatura);
     }
 
+    // Devuelve únicamente las asignaturas que pertenecen al profesor
     public List<Asignatura> obtenerAsignaturasProfesor(Usuario profesor) {
-        return null;
+        List<Asignatura> asignaturasProfesor = new ArrayList<>();
+        for (Asignatura asignatura : asignaturas) {
+            if (asignatura.getProfesor().equals(profesor)) {
+                asignaturasProfesor.add(asignatura);
+            }
+        }
+        return asignaturasProfesor;
     }
 
+    // Busca una asignatura por su nombre.
     public Asignatura buscarAsignatura(String nombre){
+        for (Asignatura asignatura : asignaturas) {
+            if (asignatura.getNombre().equalsIgnoreCase(nombre)) {
+                return asignatura;
+            }
+        }
         return null;
     }
 
+    // Cambia el turno solo si la asignatura pertenece al profesor indicado.
     public boolean cambiarTurno(Usuario profesor, String nombreAsignatura, String nuevoTurno) {
+        for (Asignatura asignatura : asignaturas) {
+            if (asignatura.getNombre().equalsIgnoreCase(nombreAsignatura) && asignatura.getProfesor().equals(profesor)) {
+                asignatura.cambiarTurno(nuevoTurno);
+                return true;
+            }
+        }
         return false;
     }
 }
