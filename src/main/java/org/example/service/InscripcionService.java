@@ -33,6 +33,17 @@ public class InscripcionService implements InscripcionConsulta {
         return asignaturasEstudiante;
     }
 
+    // Devuelve los estudiantes inscriptos en una asignatura determinada.
+    public List<Usuario> obtenerEstudiantesAsignatura(Asignatura asignatura) {
+        List<Usuario> estudiantes = new ArrayList<>();
+        for (Inscripcion inscripcion : inscripciones) {
+            if (inscripcion.getAsignatura().equals(asignatura)) {
+                estudiantes.add(inscripcion.getEstudiante());
+            }
+        }
+        return estudiantes;
+    }
+
     // Permite comprobar una inscripción sin depender directamente de InscripcionService
     @Override
     public boolean estaInscripto(Usuario estudiante, Asignatura asignatura) {

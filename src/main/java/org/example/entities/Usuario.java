@@ -1,5 +1,7 @@
 package org.example.entities;
 
+import java.util.Objects;
+
 public class Usuario {
 
     private String nombre;
@@ -29,4 +31,21 @@ public class Usuario {
         return rol;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Usuario usuario)) {
+            return false;
+        }
+        return nombre.equals(usuario.nombre)
+                && apellido.equals(usuario.apellido)
+                && rol == usuario.rol;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nombre, apellido, rol);
+    }
 }

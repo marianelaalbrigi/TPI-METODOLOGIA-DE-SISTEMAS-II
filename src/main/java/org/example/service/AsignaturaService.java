@@ -28,6 +28,11 @@ public class AsignaturaService {
         return asignaturasProfesor;
     }
 
+    // Devuelve todas las asignaturas disponibles en el sistema.
+    public List<Asignatura> obtenerAsignaturas(){
+        return new ArrayList<>(asignaturas);
+    }
+
     // Busca una asignatura por su nombre.
     public Asignatura buscarAsignatura(String nombre){
         for (Asignatura asignatura : asignaturas) {
