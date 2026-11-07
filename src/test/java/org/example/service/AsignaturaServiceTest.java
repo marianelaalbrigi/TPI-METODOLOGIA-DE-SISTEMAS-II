@@ -3,38 +3,65 @@ package org.example.service;
 import org.example.entities.Asignatura;
 import org.example.entities.Rol;
 import org.example.entities.Usuario;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AsignaturaServiceTest {
 
-    @Test
-    void crearAsignaturaExitosa() {
-        AsignaturaService service = new AsignaturaService();
-        Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+  private AsignaturaService service;
 
-        service.cargarAsignatura(profesor, "Matematica", "Mañana");
+  @BeforeEach
+  void setUp() {
+    service = new AsignaturaService();
+  }
 
-        assertEquals(1, service.obtenerAsignaturas().size(), "La asignatura deberia haberse agregado a la lista del servicio");
-    }
+  @Test
+  void crearAsignaturaExitosa() {
+    Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
 
-    @Test
-    void intentarListarMateriaInexistente() {
-        AsignaturaService service = new AsignaturaService();
+    service.cargarAsignatura(profesor, "Matematica", "Mañana");
 
-        Optional<Asignatura> resultado = service.buscarAsignatura("MateriaFalsa");
+    assertEquals(1, service.obtenerAsignaturas().size(), "La asignatura debería haberse agregado a la lista del servicio");
+  }
 
-        assertTrue(resultado.isEmpty(), "La busqueda de una materia que no existe debe retornar un Optional vacio");
-    }
+  @Test
+  void intentarListarMateriaInexistente() {
+    Optional<Asignatura> resultado = service.buscarAsignatura("MateriaFalsa");
 
-    @Test
-    void cambiarTurnoAsignaturaInexistenteLanzaExcepcion() {
-        AsignaturaService service = new AsignaturaService();
-        Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+    assertTrue(resultado.isEmpty(), "La búsqueda de una materia que no existe debe retornar un Optional vacío");
+  }
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            service.cambiarTurno(profesor, "Fisica", "Noche");
-        }, "Deberia lanzar IllegalArgumentException si la asignatura no existe o no pertenece al profesor");
-    }
+  @Test
+  void cambiarTurnoAsignaturaInexistenteLanzaExcepcion() {
+    Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      service.cambiarTurno(profesor, "Fisica", "Noche");
+    }, "Debería lanzar IllegalArgumentException si la asignatura no existe o no pertenece al profesor");
+  }
+
+  @Test
+  void obtenerAsignaturasProfesorExitoso() {
+    Usuario profesor = new Usuario("Carlos", "Perez", Rol.PROFESOR);
+    service.cargarAsignatura(profesor, "Algoritmos", "Tarde");
+
+    var asignaturas = service.obtenerAsignaturasProfesor(profesor);
+
+    assertNotNull(asignaturas);
+    assertEquals(1, asignaturas.size());
+  }
+
+  @Test
+  void cambiarTurnoExitoso() {
+    Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+    service.cargarAsignatura(profesor, "Matematica", "Mañana");
+
+    service.cambiarTurno(profesor, "Matematica", "Noche");
+    var asignaturaOpt = service.buscarAsignatura("Matematica");
+
+    assertTrue(asignaturaOpt.isPresent());
+    assertEquals("Noche", asignaturaOpt.get().getTurno());
+  }
 }

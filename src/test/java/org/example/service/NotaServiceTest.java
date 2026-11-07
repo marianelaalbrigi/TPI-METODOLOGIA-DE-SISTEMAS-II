@@ -3,38 +3,47 @@ package org.example.service;
 import org.example.entities.Asignatura;
 import org.example.entities.Rol;
 import org.example.entities.Usuario;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class NotaServiceTest {
 
-  @Test
-  void cargarNotaExitosa() {
-    InscripcionService inscripcionService = new InscripcionService();
-    NotaService notaService = new NotaService(inscripcionService);
+  private NotaService notaService;
+  private InscripcionService inscripcionService;
 
-    Usuario estudiante = new Usuario("Pedro", "Gomez", Rol.ESTUDIANTE);
-    Usuario profesor = new Usuario("Juan", "Perez", Rol.PROFESOR);
-    Asignatura asignatura = new Asignatura("Base de Datos", "Noche", profesor);
-
-    inscripcionService.inscribir(estudiante, asignatura);
-    notaService.publicarNota(estudiante, asignatura, 9.5);
-
-    assertEquals(1, notaService.obtenerNotasEstudiante(estudiante).size(), "La nota debe publicarse exitosamente si el alumno esta inscripto");
+  @BeforeEach
+  void setUp() {
+    inscripcionService = new InscripcionService();
+    notaService = new NotaService(inscripcionService); // Inyección de dependencia del contrato
   }
 
   @Test
-  void cargarNotaSinEstarInscripto() {
-    InscripcionService inscripcionService = new InscripcionService();
-    NotaService notaService = new NotaService(inscripcionService);
+  void publicarNotaExitosamente() {
+    Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+    Asignatura asignatura = new Asignatura("Matematica", "Mañana", profesor);
+    Usuario estudiante = new Usuario("Juan", "Perez", Rol.ESTUDIANTE);
 
-    Usuario estudiante = new Usuario("Pedro", "Gomez", Rol.ESTUDIANTE);
-    Usuario profesor = new Usuario("Juan", "Perez", Rol.PROFESOR);
-    Asignatura asignatura = new Asignatura("Base de Datos", "Noche", profesor);
+    // Primero se inscribe para que pase la validación
+    inscripcionService.inscribir(estudiante, asignatura);
 
-    // No lo inscribimos, por lo que publicarNota debe fallar por el control de NotaService
+    notaService.publicarNota(estudiante, asignatura, 9.5);
+
+    var notas = notaService.obtenerNotasEstudiante(estudiante);
+    assertEquals(1, notas.size());
+    assertEquals(9.5, notas.get(0).getValor());
+  }
+
+  @Test
+  void publicarNotaSinEstarInscriptoLanzaExcepcion() {
+    Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+    Asignatura asignatura = new Asignatura("Matematica", "Mañana", profesor);
+    Usuario estudiante = new Usuario("Juan", "Perez", Rol.ESTUDIANTE);
+
+    // No lo inscribimos, por lo que debe fallar
     assertThrows(IllegalStateException.class, () -> {
       notaService.publicarNota(estudiante, asignatura, 8.0);
-    }, "Deberia lanzar IllegalStateException si se intenta publicar nota a un estudiante no inscripto");
+    }, "Debe lanzar excepción si el estudiante no está inscripto");
   }
 }

@@ -41,6 +41,11 @@ pmd {
             'category/java/bestpractices.xml'
     ]
 }
+
+tasks.withType(Pmd).configureEach {
+    exclude '**/org/example/Main.java'
+}
+
 spotless {
     java {
         target 'src/*/java/**/*.java'

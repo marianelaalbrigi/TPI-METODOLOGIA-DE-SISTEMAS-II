@@ -3,44 +3,72 @@ package org.example.service;
 import org.example.entities.Asignatura;
 import org.example.entities.Rol;
 import org.example.entities.Usuario;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class InscripcionServiceTest {
 
-  @Test
-  void crearInscripcionExitosa() {
-    InscripcionService service = new InscripcionService();
-    Usuario estudiante = new Usuario("Juan", "Perez", Rol.ESTUDIANTE);
-    Usuario profesor = new Usuario("Maria", "Lopez", Rol.PROFESOR);
-    Asignatura asignatura = new Asignatura("Algoritmos", "Mañana", profesor);
+  private InscripcionService inscripcionService;
 
-    service.inscribir(estudiante, asignatura);
-
-    assertTrue(service.estaInscripto(estudiante, asignatura), "El estudiante deberia figurar inscripto correctamente");
+  @BeforeEach
+  void setUp() {
+    inscripcionService = new InscripcionService();
   }
 
   @Test
-  void crearInscripcionDuplicadaLanzaExcepcion() {
-    InscripcionService service = new InscripcionService();
+  void inscribirEstudianteExitosoYVerificarInscripcion() {
+    Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+    Asignatura asignatura = new Asignatura("Matematica", "Mañana", profesor);
     Usuario estudiante = new Usuario("Juan", "Perez", Rol.ESTUDIANTE);
-    Usuario profesor = new Usuario("Maria", "Lopez", Rol.PROFESOR);
-    Asignatura asignatura = new Asignatura("Algoritmos", "Mañana", profesor);
 
-    service.inscribir(estudiante, asignatura);
+    inscripcionService.inscribir(estudiante, asignatura);
+
+    boolean inscripto = inscripcionService.estaInscripto(estudiante, asignatura);
+    assertTrue(inscripto, "El estudiante debería figurar como inscripto");
+  }
+
+  @Test
+  void inscribirEstudianteDosVecesLanzaExcepcion() {
+    Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+    Asignatura asignatura = new Asignatura("Matematica", "Mañana", profesor);
+    Usuario estudiante = new Usuario("Juan", "Perez", Rol.ESTUDIANTE);
+
+    inscripcionService.inscribir(estudiante, asignatura);
 
     assertThrows(IllegalStateException.class, () -> {
-      service.inscribir(estudiante, asignatura);
-    }, "Deberia lanzar IllegalStateException al intentar inscribir al mismo alumno dos veces");
+      inscripcionService.inscribir(estudiante, asignatura);
+    }, "Debería lanzar IllegalStateException si el estudiante ya está inscripto");
   }
 
   @Test
-  void intentarListarInscripcionesAlumnoInexistente() {
-    InscripcionService service = new InscripcionService();
-    Usuario estudianteNuevo = new Usuario("Lucia", "Gomez", Rol.ESTUDIANTE);
+  void obtenerEstudiantesAsignaturaExitoso() {
+    Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+    Asignatura asignatura = new Asignatura("Fisica", "Tarde", profesor);
+    Usuario estudiante = new Usuario("Maria", "Lopez", Rol.ESTUDIANTE);
 
-    var asignaturas = service.obtenerAsignaturasEstudiante(estudianteNuevo);
+    inscripcionService.inscribir(estudiante, asignatura);
 
-    assertTrue(asignaturas.isEmpty(), "Un alumno sin inscripciones debe retornar una lista vacia");
+    var estudiantes = inscripcionService.obtenerEstudiantesAsignatura(asignatura);
+
+    assertNotNull(estudiantes);
+    assertEquals(1, estudiantes.size());
+    assertEquals("Maria", estudiantes.get(0).getNombre());
+  }
+
+  @Test
+  void obtenerAsignaturasEstudianteExitoso() {
+    Usuario profesor = new Usuario("Ana", "Gomez", Rol.PROFESOR);
+    Asignatura asignatura = new Asignatura("Quimica", "Mañana", profesor);
+    Usuario estudiante = new Usuario("Carlos", "Ruiz", Rol.ESTUDIANTE);
+
+    inscripcionService.inscribir(estudiante, asignatura);
+
+    var asignaturas = inscripcionService.obtenerAsignaturasEstudiante(estudiante);
+
+    assertNotNull(asignaturas);
+    assertEquals(1, asignaturas.size());
+    assertEquals("Quimica", asignaturas.get(0).getNombre());
   }
 }
