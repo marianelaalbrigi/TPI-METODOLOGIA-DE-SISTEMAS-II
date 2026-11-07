@@ -10,6 +10,7 @@ import org.example.service.NotaService;
 
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
@@ -77,7 +78,7 @@ public class Main {
         } else {
 
             System.out.println("Rol incorrecto, debe ingresar 'profesor' o 'estudiante'");
-        };
+        }
     }
 
     private void mostrarMenuProfesor(Usuario profesor) {
@@ -180,7 +181,7 @@ public class Main {
 
         for (Asignatura asignatura : asignaturas) {
             System.out.println("Materia: " + asignatura.getNombre() + " | Turno: " + asignatura.getTurno());
-        };
+        }
     }
 
     private void cambiarTurno(Usuario profesor) {
@@ -190,12 +191,12 @@ public class Main {
         System.out.println("Introducir nuevo turno: ");
         String nuevoTurno = sc.nextLine();
 
-        boolean cambiado = asignaturaService.cambiarTurno(profesor, nombreAsignatura, nuevoTurno);
-
-        if (cambiado) {
+        try {
+            asignaturaService.cambiarTurno(profesor, nombreAsignatura, nuevoTurno);
             System.out.println("Asignatura cambiada correctamente.");
-        } else {
-            System.out.println("Asignatura no encontrada.");
+
+        } catch (IllegalStateException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -210,8 +211,9 @@ public class Main {
         System.out.println("\n--- ASIGNATURAS A CARGO ---");
 
         for (Asignatura asignatura : asignaturas) {
-            System.out.println("Materia: " + asignatura.getNombre() + " | Turno: " + asignatura.getTurno());
-        };
+            System.out.println(
+                    "Materia: " + asignatura.getNombre() + " | Turno: " + asignatura.getTurno());
+        }
 
         System.out.println("Ingrese asignatura: ");
         String nombreAsignatura = sc.nextLine();
@@ -230,9 +232,10 @@ public class Main {
             return;
         }
 
-        List<Usuario> estudiantes = inscripcionService.obtenerEstudiantesAsignatura(asignaturaSeleccionada);
+        List<Usuario> estudiantes =
+                inscripcionService.obtenerEstudiantesAsignatura(asignaturaSeleccionada);
 
-        if  (estudiantes.isEmpty()) {
+        if (estudiantes.isEmpty()) {
             System.out.println("No hay estudiantes inscriptos en esta asignatura.");
             return;
         }
@@ -263,12 +266,13 @@ public class Main {
         System.out.println("Ingrese nota: ");
         double valor = Double.parseDouble(sc.nextLine());
 
-        boolean publicada = notaService.publicarNota(estudianteSeleccionado,asignaturaSeleccionada,valor);
+        try {
+            notaService.publicarNota(estudianteSeleccionado, asignaturaSeleccionada, valor);
 
-        if (publicada) {
             System.out.println("Nota publicada correctamente.");
-        } else {
-            System.out.println("No se pudo publicar la nota.");
+
+        } catch (IllegalStateException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -285,25 +289,34 @@ public class Main {
         }
 
         for (Asignatura asignatura : asignaturas) {
-            System.out.println("Asignatura: " + asignatura.getNombre() + " | Profesor: " + asignatura.getProfesor().getNombreCompleto() + " | Turno: " + asignatura.getTurno());
+            System.out.println(
+                    "Asignatura: "
+                            + asignatura.getNombre()
+                            + " | Profesor: "
+                            + asignatura.getProfesor().getNombreCompleto()
+                            + " | Turno: "
+                            + asignatura.getTurno());
         }
 
         System.out.println("Introducir la asignatura: ");
         String nombreAsignatura = sc.nextLine();
 
-        Asignatura asignatura = asignaturaService.buscarAsignatura(nombreAsignatura);
+        Optional<Asignatura> resultado = asignaturaService.buscarAsignatura(nombreAsignatura);
 
-        if (asignatura == null) {
+        if (resultado.isEmpty()) {
             System.out.println("Asignatura no disponible.");
             return;
         }
 
-        boolean inscripto = inscripcionService.inscribir(estudiante, asignatura);
+        Asignatura asignatura = resultado.get();
 
-        if (inscripto) {
+        try {
+            inscripcionService.inscribir(estudiante, asignatura);
+
             System.out.println("Inscripción registrada correctamente.");
-        } else {
-            System.out.println("Ya estás inscripto en esta asignatura.");
+
+        } catch (IllegalStateException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -318,7 +331,8 @@ public class Main {
         }
 
         for (Asignatura asignatura : asignaturas) {
-            System.out.println("Asignatura: " + asignatura.getNombre() + " | Turno: " + asignatura.getTurno());
+            System.out.println(
+                    "Asignatura: " + asignatura.getNombre() + " | Turno: " + asignatura.getTurno());
         }
     }
 
@@ -332,8 +346,9 @@ public class Main {
             return;
         }
 
-        for (Nota nota :  notas) {
-            System.out.println("Asignatura: " + nota.getAsignatura().getNombre() + " | Nota: " + nota.getValor());
+        for (Nota nota : notas) {
+            System.out.println(
+                    "Asignatura: " + nota.getAsignatura().getNombre() + " | Nota: " + nota.getValor());
         }
     }
 }
