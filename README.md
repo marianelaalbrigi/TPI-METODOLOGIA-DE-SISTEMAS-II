@@ -1,6 +1,6 @@
 # Sistema de Gestión Académica
 
-**📷 [¡Mirá el video explicativo!] (PEGAR_LINK_DEL_VIDEO)**
+**📷 [¡Mirá el video explicativo!](https://youtu.be/_e7epykJVWc) **
 
 Aplicación de consola desarrollada en Java para la gestión académica, que permite administrar asignaturas, inscripciones de estudiantes y calificaciones. El proyecto se enfoca en la aplicación de principios de **Clean Code**, buenas prácticas de diseño y técnicas de refactorización para mejorar la organización, legibilidad y mantenibilidad del código.
 
